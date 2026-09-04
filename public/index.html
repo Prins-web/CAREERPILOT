@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerPilot AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B111F;
+    --bg-2:#0E1729;
+    --surface:#131D33;
+    --surface-2:#1A2540;
+    --border:#263455;
+    --accent:#E8A33D;
+    --accent-dim:#E8A33D33;
+    --accent-2:#4FD1C5;
+    --accent-2-dim:#4FD1C533;
+    --text:#E9ECF3;
+    --text-muted:#8B93A9;
+    --text-faint:#5B6480;
+    --danger:#E2695C;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, #1B2A4A 0%, transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 0%, #14213A 0%, transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 28px;border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:20;
+    background:rgba(11,17,31,0.85);backdrop-filter:blur(10px);
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{width:30px;height:30px;flex-shrink:0;}
+  .brand-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.2px;}
+  .brand-name span{color:var(--accent);}
+  .brand-tag{
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-faint);
+    letter-spacing:1.5px;text-transform:uppercase;margin-top:1px;
+  }
+  .callsign{
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted);
+    border:1px solid var(--border);padding:6px 12px;border-radius:20px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .callsign .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 8px var(--accent-2);}
+
+  /* ---------- hero / flight plan form ---------- */
+  .hero-wrap{max-width:920px;margin:0 auto;padding:56px 24px 80px;}
+  .hero-eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent-2);
+    letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .hero-eyebrow::before{content:"";width:22px;height:1px;background:var(--accent-2);display:inline-block;}
+  h1.hero-title{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;
+    font-size:clamp(32px,5vw,52px);line-height:1.08;margin:0 0 16px;letter-spacing:-0.5px;
+  }
+  h1.hero-title em{font-style:normal;color:var(--accent);}
+  .hero-sub{color:var(--text-muted);font-size:16px;line-height:1.6;max-width:560px;margin-bottom:40px;}
+
+  .plan-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:32px;position:relative;overflow:hidden;
+  }
+  .plan-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--accent),var(--accent-2),transparent);
+  }
+  .plan-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+  .plan-head-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--text);}
+  .plan-head-code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;}
+
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .field{display:flex;flex-direction:column;gap:8px;}
+  .field.full{grid-column:1/-1;}
+  .field label{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);
+    letter-spacing:1px;text-transform:uppercase;display:flex;justify-content:space-between;
+  }
+  .field label .req{color:var(--accent);}
+  .field input, .field textarea, .field select{
+    background:var(--surface-2);border:1px solid var(--border);border-radius:9px;
+    padding:11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;
+    outline:none;transition:border-color .15s, box-shadow .15s;resize:vertical;
+  }
+  .field textarea{min-height:64px;font-family:'Inter',sans-serif;}
+  .field input:focus, .field textarea:focus, .field select:focus{
+    border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);
+  }
+  .field .hint{font-size:11.5px;color:var(--text-faint);}
+
+  .btn{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;
+    border:none;border-radius:9px;padding:13px 22px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:9px;transition:transform .12s, box-shadow .12s, opacity .12s;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .btn-primary{background:var(--accent);color:#1A1204;}
+  .btn-primary:hover:not(:disabled){box-shadow:0 0 0 4px var(--accent-dim);}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-muted);}
+  .btn-ghost:hover:not(:disabled){border-color:var(--accent-2);color:var(--text);}
+  .btn-block{width:100%;justify-content:center;margin-top:26px;padding:15px;}
+
+  /* ---------- app shell ---------- */
+  .shell{display:none;max-width:1180px;margin:0 auto;padding:32px 24px 80px;gap:26px;grid-template-columns:230px 1fr;}
+  .shell.active{display:grid;}
+  @media (max-width:860px){ .shell{grid-template-columns:1fr;} }
+
+  .nav-col{display:flex;flex-direction:column;gap:6px;}
+  .profile-mini{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px;margin-bottom:14px;
+  }
+  .profile-mini-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .profile-mini-goal{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;line-height:1.3;}
+  .profile-mini-edit{margin-top:10px;font-size:11.5px;color:var(--accent-2);cursor:pointer;background:none;border:none;font-family:'JetBrains Mono',monospace;padding:0;}
+
+  .navitem{
+    display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:9px;cursor:pointer;
+    color:var(--text-muted);font-size:14px;font-weight:500;border:1px solid transparent;
+    transition:background .12s, color .12s;
+  }
+  .navitem svg{width:17px;height:17px;flex-shrink:0;}
+  .navitem:hover{background:var(--surface);color:var(--text);}
+  .navitem.active{background:var(--surface);border-color:var(--border);color:var(--text);}
+  .navitem.active svg{color:var(--accent);}
+  .navitem .leg{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);margin-left:auto;}
+
+  @media (max-width:860px){
+    .nav-col{flex-direction:row;overflow-x:auto;padding-bottom:6px;}
+    .navitem{flex-shrink:0;}
+    .navitem .leg{display:none;}
+    .profile-mini{display:none;}
+  }
+
+  .panel{min-width:0;}
+  .panel-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+  .panel-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;}
+  .panel-sub{color:var(--text-muted);font-size:13.5px;margin-top:4px;}
+
+  .empty-state{
+    border:1px dashed var(--border);border-radius:var(--radius);padding:48px 28px;text-align:center;color:var(--text-muted);
+  }
+  .empty-state svg{width:34px;height:34px;color:var(--text-faint);margin-bottom:14px;}
+  .loading-state{padding:60px 20px;text-align:center;color:var(--text-muted);}
+  .spinner{
+    width:26px;height:26px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent);
+    margin:0 auto 16px;animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-msg{font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:0.5px;}
+  .error-box{
+    border:1px solid var(--danger);background:#E2695C1A;border-radius:var(--radius);
+    padding:18px 20px;color:#F3B3AC;font-size:13.5px;
+  }
+  .error-box button{margin-top:12px;}
+
+  /* ---------- roadmap timeline ---------- */
+  .timeline{position:relative;padding-left:36px;}
+  .timeline::before{
+    content:"";position:absolute;left:11px;top:6px;bottom:6px;width:2px;
+    background:linear-gradient(var(--accent),var(--accent-2));opacity:0.4;
+  }
+  .waypoint{position:relative;padding-bottom:28px;}
+  .waypoint:last-child{padding-bottom:0;}
+  .waypoint-dot{
+    position:absolute;left:-36px;top:2px;width:24px;height:24px;border-radius:50%;
+    background:var(--bg-2);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:600;color:var(--accent);
+  }
+  .waypoint.type-destination .waypoint-dot{border-color:var(--accent-2);color:var(--accent-2);background:var(--accent-2-dim);}
+  .waypoint-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;
+  }
+  .waypoint-meta{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+  .waypoint-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-2);letter-spacing:0.5px;}
+  .waypoint-type{
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;
+    color:var(--text-faint);border:1px solid var(--border);padding:2px 8px;border-radius:10px;
+  }
+  .waypoint-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;margin:4px 0 6px;}
+  .waypoint-desc{color:var(--text-muted);font-size:13.5px;line-height:1.55;}
+
+  /* ---------- skills ---------- */
+  .skill-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px;
+  }
+  .skill-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;}
+  .skill-name{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15.5px;}
+  .priority-tag{
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+    padding:3px 9px;border-radius:10px;flex-shrink:0;
+  }
+  .priority-high{background:#E8A33D26;color:var(--accent);}
+  .priority-medium{background:#4FD1C526;color:var(--accent-2);}
+  .priority-low{background:#8B93A926;color:var(--text-muted);}
+  .skill-reason{color:var(--text-muted);font-size:13.5px;line-height:1.55;margin-bottom:12px;}
+  .course-chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+  .course-chip{
+    font-size:12.5px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
+    padding:6px 11px;color:var(--text);
+  }
+  .course-chip .provider{color:var(--text-faint);font-family:'JetBrains Mono',monospace;font-size:10.5px;margin-left:6px;}
+
+  /* ---------- interview ---------- */
+  .qcard{
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:18px 20px;margin-bottom:12px;cursor:pointer;
+  }
+  .qcard-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .qnum{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:12px;flex-shrink:0;margin-top:2px;}
+  .qtext{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;line-height:1.4;flex:1;}
+  .qcat{
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;
+    color:var(--text-faint);border:1px solid var(--border);padding:2px 8px;border-radius:10px;flex-shrink:0;
+  }
+  .qtip{
+    margin-top:12px;padding-top:12px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px;line-height:1.55;
+    display:none;
+  }
+  .qcard.open .qtip{display:block;}
+  .qcard.open .qtoggle{transform:rotate(180deg);}
+  .qtoggle{transition:transform .15s;color:var(--text-faint);flex-shrink:0;width:14px;height:14px;margin-top:3px;}
+
+  /* ---------- resume ---------- */
+  .resume-input{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:22px;
+  }
+  .resume-input textarea{width:100%;min-height:160px;}
+  .score-ring-wrap{display:flex;align-items:center;gap:20px;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:22px;margin-bottom:20px;}
+  .score-num{font-family:'Space Grotesk',sans-serif;font-size:38px;font-weight:700;color:var(--accent);}
+  .score-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media (max-width:700px){.two-col{grid-template-columns:1fr;} .field-grid{grid-template-columns:1fr;}}
+  .list-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
+  .list-card h4{font-family:'Space Grotesk',sans-serif;font-size:13px;margin:0 0 12px;color:var(--text-muted);
+    text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+  .list-card ul{margin:0;padding-left:18px;color:var(--text);font-size:13.5px;line-height:1.8;}
+  .bullet-pair{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;}
+  .bullet-orig{color:var(--text-faint);font-size:13px;text-decoration:line-through;margin-bottom:8px;}
+  .bullet-new{color:var(--text);font-size:13.5px;display:flex;gap:8px;}
+  .bullet-new .arrow{color:var(--accent-2);flex-shrink:0;}
+
+  /* ---------- opportunities ---------- */
+  .role-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px;
+  }
+  .role-top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:8px;}
+  .role-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16.5px;}
+  .match-badge{
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent-2);border:1px solid var(--accent-2);
+    padding:3px 10px;border-radius:20px;flex-shrink:0;
+  }
+  .role-desc{color:var(--text-muted);font-size:13.5px;line-height:1.6;margin-bottom:10px;}
+  .role-why{font-size:13px;color:var(--text);background:var(--surface-2);border-radius:8px;padding:10px 13px;line-height:1.5;}
+  .role-why b{color:var(--accent-2);}
+
+  ::-webkit-scrollbar{height:8px;width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="14" stroke="#E8A33D" stroke-width="1.5"/>
+      <circle cx="16" cy="16" r="1.6" fill="#4FD1C5"/>
+      <path d="M16 4 L16 9 M16 23 L16 28 M4 16 L9 16 M23 16 L28 16" stroke="#4FD1C5" stroke-width="1.3"/>
+      <path d="M16 8 L19 16 L16 24 L13 16 Z" stroke="#E8A33D" stroke-width="1.3" fill="#E8A33D22"/>
+    </svg>
+    <div>
+      <div class="brand-name">Career<span>Pilot</span> AI</div>
+      <div class="brand-tag">Navigation for your career</div>
+    </div>
+  </div>
+  <div class="callsign" id="callsignBadge" style="display:none;">
+    <span class="dot"></span> <span id="callsignText">FLIGHT ACTIVE</span>
+  </div>
+</div>
+
+<!-- ===================== HERO / INTAKE FORM ===================== -->
+<div class="hero-wrap" id="heroSection">
+  <div class="hero-eyebrow">Flight plan intake</div>
+  <h1 class="hero-title">File your <em>flight plan</em>.<br>We'll chart the course.</h1>
+  <p class="hero-sub">Enter your education, skills, interests, and career goal. CareerPilot AI plots a personalised roadmap, recommends the skills and courses to close the gap, preps you for interviews, and sharpens your resume — all in one cockpit.</p>
+
+  <div class="plan-card">
+    <div class="plan-head">
+      <div class="plan-head-title">Student Profile</div>
+      <div class="plan-head-code mono">FORM // CPA-01</div>
+    </div>
+    <div class="field-grid">
+      <div class="field full">
+        <label>Education <span class="req">*</span></label>
+        <input id="inEducation" type="text" placeholder="e.g. B.Tech in Computer Science, 3rd year, XYZ University">
+      </div>
+      <div class="field full">
+        <label>Skills <span class="req">*</span></label>
+        <textarea id="inSkills" placeholder="e.g. Python, SQL, basic machine learning, public speaking"></textarea>
+        <div class="hint">Separate with commas — include technical and soft skills.</div>
+      </div>
+      <div class="field full">
+        <label>Interests</label>
+        <textarea id="inInterests" placeholder="e.g. AI/ML, product design, climate tech, sports analytics"></textarea>
+      </div>
+      <div class="field full">
+        <label>Career Goal <span class="req">*</span></label>
+        <input id="inGoal" type="text" placeholder="e.g. Become a Machine Learning Engineer at a product company">
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" id="fileFlightBtn" onclick="fileFlightPlan()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9 22 2Z"/></svg>
+      File Flight Plan
+    </button>
+  </div>
+</div>
+
+<!-- ===================== APP SHELL ===================== -->
+<div class="shell" id="appShell">
+  <div class="nav-col">
+    <div class="profile-mini">
+      <div class="profile-mini-label">Destination</div>
+      <div class="profile-mini-goal" id="miniGoal">—</div>
+      <button class="profile-mini-edit" onclick="editProfile()">‹ edit flight plan</button>
+    </div>
+    <div class="navitem active" data-tab="roadmap" onclick="switchTab('roadmap')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18v-6a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v6"/><path d="M3 18h18M12 3v6"/><circle cx="12" cy="3" r="1.5"/></svg>
+      Roadmap <span class="leg">LEG 1</span>
+    </div>
+    <div class="navitem" data-tab="skills" onclick="switchTab('skills')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>
+      Skills & Courses <span class="leg">LEG 2</span>
+    </div>
+    <div class="navitem" data-tab="interview" onclick="switchTab('interview')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Interview Prep <span class="leg">LEG 3</span>
+    </div>
+    <div class="navitem" data-tab="resume" onclick="switchTab('resume')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6M9 9h1"/></svg>
+      Resume Review <span class="leg">LEG 4</span>
+    </div>
+    <div class="navitem" data-tab="opportunities" onclick="switchTab('opportunities')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      Opportunities <span class="leg">LEG 5</span>
+    </div>
+  </div>
+
+  <div class="panel" id="panel">
+    <!-- populated by JS -->
+  </div>
+</div>
+
+<script>
+const state = {
+  profile: null,
+  cache: { roadmap:null, skills:null, interview:null, resume:null, opportunities:null },
+  resumeText: "",
+  activeTab: "roadmap",
+  openQuestion: null
+};
+
+// ---------------- Backend API helper ----------------
+// All calls go to our own Express server (server.js), which holds the
+// ANTHROPIC_API_KEY and talks to Claude. The browser never sees the key.
+async function callBackend(endpoint, payload) {
+  const response = await fetch("/api/generate/" + endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || ("Request failed (" + response.status + ")"));
+  return data;
+}
+
+// ---------------- Flight plan intake ----------------
+function fileFlightPlan() {
+  const education = document.getElementById('inEducation').value.trim();
+  const skills = document.getElementById('inSkills').value.trim();
+  const interests = document.getElementById('inInterests').value.trim();
+  const goal = document.getElementById('inGoal').value.trim();
+
+  if (!education || !skills || !goal) {
+    alert("Please fill in Education, Skills, and Career Goal to file your flight plan.");
+    return;
+  }
+  state.profile = { education, skills, interests, goal };
+  state.cache = { roadmap:null, skills:null, interview:null, resume:null, opportunities:null };
+
+  document.getElementById('heroSection').style.display = 'none';
+  document.getElementById('appShell').classList.add('active');
+  document.getElementById('callsignBadge').style.display = 'flex';
+  document.getElementById('miniGoal').textContent = goal;
+
+  switchTab('roadmap');
+}
+
+function editProfile() {
+  document.getElementById('appShell').classList.remove('active');
+  document.getElementById('callsignBadge').style.display = 'none';
+  document.getElementById('heroSection').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+// ---------------- Tab switching ----------------
+function switchTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll('.navitem').forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tab);
+  });
+  renderPanel();
+}
+
+function renderPanel() {
+  const panel = document.getElementById('panel');
+  const tab = state.activeTab;
+  const configs = {
+    roadmap: { title: "Career Roadmap", sub: "Your flight path from where you are to where you're headed.", icon: "map" },
+    skills: { title: "Skills & Courses", sub: "The gap-closing skills to train, and where to learn them.", icon: "target" },
+    interview: { title: "Interview Prep", sub: "Likely questions for your target role, with tips on nailing them.", icon: "mic" },
+    resume: { title: "Resume Review", sub: "Paste your resume for a instrument-panel readout on where it stands.", icon: "doc" },
+    opportunities: { title: "Career Opportunities", sub: "Roles worth targeting right now, ranked by fit.", icon: "brief" }
+  };
+  const cfg = configs[tab];
+
+  let bodyHTML = "";
+  if (tab === 'resume') {
+    bodyHTML = renderResumeTab();
+  } else if (state.cache[tab] === null) {
+    bodyHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      <div style="margin-bottom:16px;">Not generated yet for this leg of the journey.</div>
+      <button class="btn btn-primary" onclick="generate('${tab}')">Generate ${cfg.title}</button>
+    </div>`;
+  } else if (state.cache[tab] === 'loading') {
+    bodyHTML = renderLoading(tab);
+  } else if (state.cache[tab] && state.cache[tab].error) {
+    bodyHTML = `<div class="error-box">Turbulence ahead — couldn't reach the AI (${state.cache[tab].error}).
+      <div><button class="btn btn-ghost" onclick="generate('${tab}')">Retry</button></div></div>`;
+  } else {
+    bodyHTML = renderData(tab, state.cache[tab]);
+  }
+
+  panel.innerHTML = `
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">${cfg.title}</div>
+        <div class="panel-sub">${cfg.sub}</div>
+      </div>
+      ${ (tab!=='resume' && state.cache[tab] && state.cache[tab] !== 'loading' && !state.cache[tab].error) ?
+        `<button class="btn btn-ghost" onclick="generate('${tab}')">Regenerate</button>` : "" }
+    </div>
+    <div id="tabBody">${bodyHTML}</div>
+  `;
+}
+
+function renderLoading(tab) {
+  const msgs = {
+    roadmap: "Plotting waypoints…",
+    skills: "Cross-referencing skill gaps…",
+    interview: "Drafting interview questions…",
+    opportunities: "Scanning open roles…"
+  };
+  return `<div class="loading-state"><div class="spinner"></div><div class="loading-msg mono">${msgs[tab] || "Working…"}</div></div>`;
+}
+
+// ---------------- Generation per tab ----------------
+async function generate(tab) {
+  state.cache[tab] = 'loading';
+  renderPanel();
+  try {
+    let result;
+    if (tab === 'roadmap') result = await generateRoadmap();
+    if (tab === 'skills') result = await generateSkills();
+    if (tab === 'interview') result = await generateInterview();
+    if (tab === 'opportunities') result = await generateOpportunities();
+    state.cache[tab] = result;
+  } catch (e) {
+    state.cache[tab] = { error: e.message };
+  }
+  renderPanel();
+}
+
+async function generateRoadmap() {
+  return await callBackend("roadmap", { profile: state.profile });
+}
+
+async function generateSkills() {
+  return await callBackend("skills", { profile: state.profile });
+}
+
+async function generateInterview() {
+  return await callBackend("interview", { profile: state.profile });
+}
+
+async function generateOpportunities() {
+  return await callBackend("opportunities", { profile: state.profile });
+}
+
+async function generateResumeReview() {
+  return await callBackend("resume", { profile: state.profile, resumeText: state.resumeText });
+}
+
+async function submitResumeReview() {
+  const val = document.getElementById('resumeTextarea').value.trim();
+  if (!val) { alert("Paste your resume text first."); return; }
+  state.resumeText = val;
+  state.cache.resume = 'loading';
+  renderPanel();
+  try {
+    state.cache.resume = await generateResumeReview();
+  } catch (e) {
+    state.cache.resume = { error: e.message };
+  }
+  renderPanel();
+}
+
+// ---------------- Renderers ----------------
+function renderData(tab, data) {
+  if (tab === 'roadmap') return renderRoadmap(data);
+  if (tab === 'skills') return renderSkills(data);
+  if (tab === 'interview') return renderInterview(data);
+  if (tab === 'opportunities') return renderOpportunities(data);
+  return "";
+}
+
+function renderRoadmap(data) {
+  const items = data.waypoints || [];
+  return `<div class="timeline">` + items.map((w, i) => `
+    <div class="waypoint ${w.type==='destination' ? 'type-destination' : ''}">
+      <div class="waypoint-dot">${i+1}</div>
+      <div class="waypoint-card">
+        <div class="waypoint-meta">
+          <span class="waypoint-time mono">${escapeHTML(w.timeframe||'')}</span>
+          <span class="waypoint-type">${escapeHTML(w.type||'')}</span>
+        </div>
+        <div class="waypoint-title">${escapeHTML(w.title||'')}</div>
+        <div class="waypoint-desc">${escapeHTML(w.description||'')}</div>
+      </div>
+    </div>
+  `).join("") + `</div>`;
+}
+
+function renderSkills(data) {
+  const items = data.skills || [];
+  return items.map(s => `
+    <div class="skill-card">
+      <div class="skill-top">
+        <div class="skill-name">${escapeHTML(s.name||'')}</div>
+        <div class="priority-tag priority-${s.priority||'medium'}">${escapeHTML(s.priority||'')}</div>
+      </div>
+      <div class="skill-reason">${escapeHTML(s.reason||'')}</div>
+      <div class="course-chip-row">
+        ${(s.courses||[]).map(c => `<div class="course-chip">${escapeHTML(c.name||'')}<span class="provider">${escapeHTML(c.provider||'')}</span></div>`).join("")}
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderInterview(data) {
+  const items = data.questions || [];
+  return items.map((q, i) => `
+    <div class="qcard" id="qcard-${i}" onclick="toggleQuestion(${i})">
+      <div class="qcard-top">
+        <span class="qnum mono">Q${i+1}</span>
+        <div class="qtext">${escapeHTML(q.question||'')}</div>
+        <span class="qcat">${escapeHTML(q.category||'')}</span>
+        <svg class="qtoggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="qtip">💡 ${escapeHTML(q.tip||'')}</div>
+    </div>
+  `).join("");
+}
+
+function toggleQuestion(i) {
+  const el = document.getElementById('qcard-' + i);
+  el.classList.toggle('open');
+}
+
+function renderOpportunities(data) {
+  const items = data.roles || [];
+  return items.map(r => `
+    <div class="role-card">
+      <div class="role-top">
+        <div class="role-title">${escapeHTML(r.title||'')}</div>
+        <div class="match-badge mono">${r.matchScore||0}% match</div>
+      </div>
+      <div class="role-desc">${escapeHTML(r.description||'')}</div>
+      <div class="role-why"><b>Why it fits:</b> ${escapeHTML(r.whyFit||'')} ${r.growthNote ? '· ' + escapeHTML(r.growthNote) : ''}</div>
+    </div>
+  `).join("");
+}
+
+function renderResumeTab() {
+  const cache = state.cache.resume;
+  let resultHTML = "";
+  if (cache === 'loading') {
+    resultHTML = renderLoading('resume').replace("Working…","Scanning bullets and structure…");
+  } else if (cache && cache.error) {
+    resultHTML = `<div class="error-box">Turbulence ahead — couldn't reach the AI (${cache.error}).
+      <div><button class="btn btn-ghost" onclick="submitResumeReview()">Retry</button></div></div>`;
+  } else if (cache) {
+    resultHTML = `
+      <div class="score-ring-wrap">
+        <div class="score-num">${cache.score}</div>
+        <div>
+          <div class="score-label">Overall Score / 100</div>
+          <div style="color:var(--text-muted);font-size:13px;margin-top:4px;">Based on fit against your stated career goal.</div>
+        </div>
+      </div>
+      <div class="two-col" style="margin-bottom:20px;">
+        <div class="list-card">
+          <h4 style="color:var(--accent-2);">Strengths</h4>
+          <ul>${(cache.strengths||[]).map(s=>`<li>${escapeHTML(s)}</li>`).join("")}</ul>
+        </div>
+        <div class="list-card">
+          <h4 style="color:var(--accent);">Improve</h4>
+          <ul>${(cache.improvements||[]).map(s=>`<li>${escapeHTML(s)}</li>`).join("")}</ul>
+        </div>
+      </div>
+      ${(cache.bullets||[]).length ? `<h4 style="font-family:'Space Grotesk',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">Rewritten Bullets</h4>` : ""}
+      ${(cache.bullets||[]).map(b => `
+        <div class="bullet-pair">
+          <div class="bullet-orig">${escapeHTML(b.original||'')}</div>
+          <div class="bullet-new"><span class="arrow">→</span>${escapeHTML(b.improved||'')}</div>
+        </div>
+      `).join("")}
+    `;
+  }
+
+  return `
+    <div class="resume-input">
+      <div class="field">
+        <label>Paste Resume Text</label>
+        <textarea id="resumeTextarea" placeholder="Paste your resume content here (plain text)…">${escapeHTML(state.resumeText||'')}</textarea>
+      </div>
+      <button class="btn btn-primary" style="margin-top:16px;" onclick="submitResumeReview()">
+        ${cache ? 'Re-run Review' : 'Review Resume'}
+      </button>
+    </div>
+    ${resultHTML}
+  `;
+}
+
+function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? "" : String(str);
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
